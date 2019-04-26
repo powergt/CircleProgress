@@ -253,7 +253,7 @@ public class ArcProgress extends View {
     public void setArcText(String arcText) {
         this.arcText = arcText;
         this.invalidate();
-    }	    }
+    }
 
      public String getArcText() {
         return arcText;
