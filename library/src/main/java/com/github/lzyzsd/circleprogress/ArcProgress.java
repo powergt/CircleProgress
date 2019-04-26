@@ -32,12 +32,13 @@ public class ArcProgress extends View {
     private int textColor;
     private float progress = 0;
     private int max;
+    private int min;
     private int finishedStrokeColor;
     private int unfinishedStrokeColor;
     private float arcAngle;
     private String suffixText = "%";
     private float suffixTextPadding;
-
+    private String arcText = "";
     private float arcBottomHeight;
 
     private final int default_finished_color = Color.WHITE;
@@ -49,6 +50,7 @@ public class ArcProgress extends View {
     private final float default_stroke_width;
     private final String default_suffix_text;
     private final int default_max = 100;
+    private final int default_min = 0;
     private final float default_arc_angle = 360 * 0.8f;
     private float default_text_size;
     private final int min_size;
@@ -63,6 +65,7 @@ public class ArcProgress extends View {
     private static final String INSTANCE_TEXT_COLOR = "text_color";
     private static final String INSTANCE_PROGRESS = "progress";
     private static final String INSTANCE_MAX = "max";
+    private static final String INSTANCE_MIN = "min";
     private static final String INSTANCE_FINISHED_STROKE_COLOR = "finished_stroke_color";
     private static final String INSTANCE_UNFINISHED_STROKE_COLOR = "unfinished_stroke_color";
     private static final String INSTANCE_ARC_ANGLE = "arc_angle";
@@ -102,6 +105,7 @@ public class ArcProgress extends View {
         textSize = attributes.getDimension(R.styleable.ArcProgress_arc_text_size, default_text_size);
         arcAngle = attributes.getFloat(R.styleable.ArcProgress_arc_angle, default_arc_angle);
         setMax(attributes.getInt(R.styleable.ArcProgress_arc_max, default_max));
+        setMin(attributes.getInt(R.styleable.ArcProgress_arc_min, default_min));
         setProgress(attributes.getFloat(R.styleable.ArcProgress_arc_progress, 0));
         strokeWidth = attributes.getDimension(R.styleable.ArcProgress_arc_stroke_width, default_stroke_width);
         suffixTextSize = attributes.getDimension(R.styleable.ArcProgress_arc_suffix_text_size, default_suffix_text_size);
@@ -166,7 +170,10 @@ public class ArcProgress extends View {
         this.progress = Float.valueOf(new DecimalFormat("#.##").format(progress));
 
         if (this.progress > getMax()) {
-            this.progress %= getMax();
+            this.progress = getMax();
+        }
+        if (this.progress < getMin()) {
+            this.progress = getMin();
         }
         invalidate();
     }
@@ -176,11 +183,18 @@ public class ArcProgress extends View {
     }
 
     public void setMax(int max) {
-        if (max > 0) {
             this.max = max;
             invalidate();
-        }
     }
+
+    public int getMin() {
+        return min;
+    }
+
+     public void setMin(int min) {
+            this.min = min;
+            invalidate();
+    }	    
 
     public float getBottomTextSize() {
         return bottomTextSize;
@@ -236,6 +250,15 @@ public class ArcProgress extends View {
         this.invalidate();
     }
 
+    public void setArcText(String arcText) {
+        this.arcText = arcText;
+        this.invalidate();
+    }	    }
+
+     public String getArcText() {
+        return arcText;
+    }  
+    
     public String getSuffixText() {
         return suffixText;
     }
@@ -278,7 +301,7 @@ public class ArcProgress extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float startAngle = 270 - arcAngle / 2f;
-        float finishedSweepAngle = progress / (float) getMax() * arcAngle;
+        float finishedSweepAngle = (progress-(float) getMin()) / ((float) getMax()-(float) getMin()) * arcAngle;
         float finishedStartAngle = startAngle;
         if(progress == 0) finishedStartAngle = 0.01f;
         paint.setColor(unfinishedStrokeColor);
@@ -286,7 +309,7 @@ public class ArcProgress extends View {
         paint.setColor(finishedStrokeColor);
         canvas.drawArc(rectF, finishedStartAngle, finishedSweepAngle, false, paint);
 
-        String text = String.valueOf(getProgress());
+        String text = (arcText.equals(""))?String.valueOf(getProgress()):arcText;
         if (!TextUtils.isEmpty(text)) {
             textPaint.setColor(textColor);
             textPaint.setTextSize(textSize);
@@ -324,6 +347,7 @@ public class ArcProgress extends View {
         bundle.putInt(INSTANCE_TEXT_COLOR, getTextColor());
         bundle.putFloat(INSTANCE_PROGRESS, getProgress());
         bundle.putInt(INSTANCE_MAX, getMax());
+        bundle.putInt(INSTANCE_MIN, getMin());
         bundle.putInt(INSTANCE_FINISHED_STROKE_COLOR, getFinishedStrokeColor());
         bundle.putInt(INSTANCE_UNFINISHED_STROKE_COLOR, getUnfinishedStrokeColor());
         bundle.putFloat(INSTANCE_ARC_ANGLE, getArcAngle());
@@ -343,6 +367,7 @@ public class ArcProgress extends View {
             textSize = bundle.getFloat(INSTANCE_TEXT_SIZE);
             textColor = bundle.getInt(INSTANCE_TEXT_COLOR);
             setMax(bundle.getInt(INSTANCE_MAX));
+            setMin(bundle.getInt(INSTANCE_MIN));
             setProgress(bundle.getFloat(INSTANCE_PROGRESS));
             finishedStrokeColor = bundle.getInt(INSTANCE_FINISHED_STROKE_COLOR);
             unfinishedStrokeColor = bundle.getInt(INSTANCE_UNFINISHED_STROKE_COLOR);
